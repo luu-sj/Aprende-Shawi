@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Aprende Shawi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f9f9f9;
+      color: #333;
+    }
+    header {
+      background: #3ca86b;
+      color: white;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    nav {
+      display: flex;
+      justify-content: space-around;
+      background: #ffffff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    nav button {
+      flex: 1;
+      padding: 1rem;
+      border: none;
+      background: transparent;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s, color 0.3s;
+    }
+    nav button.active, nav button:hover {
+      background-color: #3ca86b;
+      color: white;
+    }
+    section {
+      display: none;
+      padding: 1.5rem;
+      animation: fade 0.4s ease-in-out;
+    }
+    section.active {
+      display: block;
+    }
+    @keyframes fade {
+      from {opacity: 0;}
+      to {opacity: 1;}
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 0.8rem;
+      margin-top: 0.5rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    button {
+      padding: 0.8rem 1rem;
+      margin-top: 1rem;
+      background-color: #3ca86b;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #339c5f;
+    }
+    table {
+      width: 100%;
+      margin-top: 1rem;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+    th, td {
+      padding: 1rem;
+      border-bottom: 1px solid #eee;
+    }
+    th {
+      background: #f4f4f4;
+    }
+    #opciones button {
+      display: block;
+      width: 100%;
+      margin: 0.5rem 0;
+      font-size: 1rem;
+    }
+    @media (max-width: 600px) {
+      nav {
+        flex-direction: column;
+      }
+      nav button {
+        border-bottom: 1px solid #eee;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Aprende Shawi</h1>
+  </header>
+  <nav>
+    <button onclick="showSection('traductor')" class="active">Traductor</button>
+    <button onclick="showSection('palabras')">Lista</button>
+    <button onclick="showSection('actividades')">Actividades</button>
+  </nav>
+
+  <section id="traductor" class="active">
+    <h2>Traductor</h2>
+    <input type="text" id="inputWord" placeholder="Escribe una palabra en español...">
+    <button onclick="traducir()">Traducir</button>
+    <p id="resultado"></p>
+  </section>
+
+  <section id="palabras">
+    <h2>Lista de Palabras</h2>
+    <table>
+      <thead><tr><th>Español</th><th>Shawi</th></tr></thead>
+      <tbody id="tablaPalabras"></tbody>
+    </table>
+  </section>
+
+  <section id="actividades">
+    <h2>Actividad</h2>
+    <p id="pregunta"></p>
+    <div id="opciones"></div>
+    <p id="respuesta"></p>
+    <button onclick="nuevaPregunta()">Nueva pregunta</button>
+  </section>
+
+  <script>
+    const palabras = {
+      "lunes": "Nuni Taweri", "martes": "Tuhpian Taweri", "miércoles": "Wa'wishin Maria Taweri",
+      "jueves": "Tuhpian Wa'wishin Maria Taweri", "viernes": "Pankasu Maria Taweri",
+      "sábado": "Sawatu", "domingo": "Tuminku", "¿cómo está el día?": "¿UNPUITA TAWERI NIHSARIN?",
+      "soleada": "Pi'sarin", "nublado": "Yamuwan", "lluvioso": "U'nanin", "tormenta": "Ashin I'wuan",
+      "comer": "KUSHATE'", "bailar": "NANSA", "vivir": "YA'WE", "dormir": "WE'E",
+      "caminar": "IRATE", "bañar": "AMA'", "descansar": "CHINUHTU", "estudiar": "NITUTE'",
+      "escribir": "NISHITE", "odiar": "NU'WI", "rayar": "NISHI", "tener": "YA'WETE",
+      "sentar": "WENSE'", "jugar": "NA'NEWI", "reír": "TEWA'", "¿qué?": "¿Ma'ta?",
+      "¿cómo?": "¿Unpuita?", "¿para qué?": "¿Mamareta?", "¿cuándo?": "¿Unpuruta?",
+      "¿por qué?": "¿Unpanta?", "¿quién?": "¿Inkarita?", "¿dónde?": "¿Insehketa?",
+      "¿cuál?": "¿Insuta?", "buenos días": "WE'KAMA", "buenas tardes": "I'WATA",
+      "buenas noches": "TAHSHITA", "pantalón negro": "Sariru yarahtun",
+      "camisa blanca": "Kuhtunen wirihtun", "banda": "Pahsaranen", "pintados": "Nuwatupisu",
+      "pulsera": "A'sutanpan", "corona": "Yankute", "cinta": "A'sumuhte",
+      "pampanilla": "A'siante", "cotona": "Kuhten", "collar matriz": "Uhsete miyu",
+      "binchas": "Tunpu muhte", "cinturón": "U'serin", "añuje": "IHTE", "chancho": "KUHSI",
+      "gallo": "WA'ANTE", "gato": "MISHU", "loro": "SHA´WE", "perro": "NI'NIRA",
+      "pato": "Penku"
+    };
+
+    function showSection(id) {
+      document.querySelectorAll("section").forEach(s => s.classList.remove("active"));
+      document.querySelector(`#${id}`).classList.add("active");
+      document.querySelectorAll("nav button").forEach(btn => btn.classList.remove("active"));
+      document.querySelector(`nav button[onclick="showSection('${id}')"]`).classList.add("active");
+    }
+
+    function traducir() {
+      let palabra = document.getElementById("inputWord").value.toLowerCase().trim();
+      document.getElementById("resultado").textContent = palabras[palabra] || "Palabra no encontrada.";
+    }
+
+    const tabla = document.getElementById("tablaPalabras");
+    for (let [es, shawi] of Object.entries(palabras)) {
+      tabla.innerHTML += `<tr><td>${es}</td><td>${shawi}</td></tr>`;
+    }
+
+    let preguntas = Object.entries(palabras);
+    function nuevaPregunta() {
+      document.getElementById("respuesta").textContent = "";
+      let i = Math.floor(Math.random() * preguntas.length);
+      let [es, correcto] = preguntas[i];
+      document.getElementById("pregunta").textContent = `¿Cómo se dice "${es}" en shawi?`;
+      let opciones = [correcto];
+      while (opciones.length < 4) {
+        let opt = preguntas[Math.floor(Math.random() * preguntas.length)][1];
+        if (!opciones.includes(opt)) opciones.push(opt);
+      }
+      opciones.sort(() => Math.random() - 0.5);
+      document.getElementById("opciones").innerHTML = opciones.map(op => `<button onclick=\"verificar('${op}','${correcto}')\">${op}</button>`).join("");
+    }
+
+    function verificar(seleccion, correcto) {
+      document.getElementById("respuesta").textContent = seleccion === correcto ? "¡Correcto!" : `Incorrecto. Era: ${correcto}`;
+    }
+
+    nuevaPregunta();
+  </script>
+</body>
+</html>
